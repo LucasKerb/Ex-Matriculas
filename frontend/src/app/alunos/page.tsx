@@ -1,25 +1,64 @@
-"use client"
+"use client";
+import { useAddAlunoInTurma } from "@/hooks/addAlunoInTurma";
+import { useDeleteAlunoOfTurma } from "@/hooks/useDeleteAlunoOfTurma";
 //imports
-import React, { useState, useEffect } from 'react';
-import { useGetAluno } from '@/hooks/useGetAluno'
-import { useGetTurmas } from '@/hooks/useGetTurmas'
-
+import { useGetAluno } from "@/hooks/useGetAluno";
+import { useGetTurmas } from "@/hooks/useGetTurmas";
+import { useGetTurmasByAluno } from "@/hooks/useGetTurmasByAluno";
+import { useRouter } from "next/navigation";
+import { useLayoutEffect, useState } from "react";
 
 const AlunoPage = () => {
-  const [id, setId] = useState<number>();
-  const [aluno, setAluno] = useState(null);
-  const [matriculas, setMatriculas] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [id, setId] = useState<number>(0);
 
   const { data } = useGetAluno(id ?? 0);
-  const { data: turmas, isLoading } = useGetTurmas();
+  const { data: turmas } = useGetTurmas();
+  const { data: matriculas } = useGetTurmasByAluno(id ?? 0);
+  const { mutate } = useDeleteAlunoOfTurma();
+  const { mutate: mutateAdd } = useAddAlunoInTurma();
 
-  useEffect(() => {
-    const alunoId = localStorage.getItem('alunoId');
+  const router = useRouter();
+
+  useLayoutEffect(() => {
+    const alunoId = localStorage.getItem("idAluno");
     const id = Number(alunoId);
 
     setId(id);
-  }, [])
+  }, []);
+
+  function handleLogout() {
+    localStorage.removeItem("idAluno");
+    localStorage.removeItem("isLoged");
+    router.push("/");
+  }
+
+  function handleMatricula(idTurma: number) {
+    mutateAdd(
+      { alunoId: id, turmaId: idTurma },
+      {
+        onError(error) {
+          alert(`Não foi possível adicionar a matrícula, erro: ${error}`);
+        },
+        onSuccess() {
+          alert("Aluno adicionado com sucesso!");
+        },
+      }
+    );
+  }
+
+  function handleRemoverMatricula(idTurma: number) {
+    mutate(
+      { alunoId: id, turmaId: idTurma },
+      {
+        onError(error) {
+          alert(`Não foi possível remover aluno da matrícula, erro: ${error}`);
+        },
+        onSuccess() {
+          alert("Aluno removido com sucesso!");
+        },
+      }
+    );
+  }
 
   return (
     <div>
@@ -29,30 +68,32 @@ const AlunoPage = () => {
         <ul>
           {turmas?.map((turma) => (
             <li key={turma.id}>
-              {turma.disciplina} - {turma.professor} ({turma.turno ? ''})
-              <button onClick={() => handleMatricula(turma.id)}>Matricular</button>
+              {`${turma.disciplina} - ${turma.professor} (${turma.turno})`}
+              <button onClick={() => handleMatricula(turma.id)}>
+                Matricular
+              </button>
             </li>
           ))}
         </ul>
 
         <h4>Minhas Matrículas</h4>
-          <ul>
-          {matriculas.map(matriculaId => {
-              const turma = turmas.find(t => t.id === matriculaId); // Encontre a turma pelo ID
-              return turma ? (
+        <ul>
+          {matriculas?.map(({ turma }) => {
+            return turma ? (
               <li key={turma.id}>
-                  {turma.disciplina} - {turma.professor} ({turma.horario})
-                  <button onClick={() => handleRemoverMatricula(turma.id)}>Remover</button>
+                {turma.disciplina} - {turma.professor} ({turma.turno})
+                <button onClick={() => handleRemoverMatricula(turma.id)}>
+                  Remover
+                </button>
               </li>
-              ) : null;
+            ) : null;
           })}
-          </ul>
-
+        </ul>
 
         <button onClick={handleLogout}>Sair</button>
       </div>
     </div>
   );
-}
+};
 
 export default AlunoPage;
