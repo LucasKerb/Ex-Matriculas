@@ -1,64 +1,35 @@
 "use client"
 //imports
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAxios } from '@/hooks/useAxios';
+import { useGetAluno } from '@/hooks/useGetAluno'
+import { useGetTurmas } from '@/hooks/useGetTurmas'
 
-//exports
-export interface AlunoProps {
-    nome: string;
-    id: number;
-}
-
-export interface TurmaProps {
-    professor: string;
-    disciplina: string;
-    dia: "segunda" | "terca" | "quarta" | "quinta" | "sexta";
-    turno: "manha" | "tarde" | "noite";
-}
-
-export interface AlunoTurmaProps {
-    idAluno: number;
-    idTurma: number;
-}
 
 const AlunoPage = () => {
-  const [nome, setNome] = useState('');
-  const [id, setId] = useState('');
+  const [id, setId] = useState<number>();
   const [aluno, setAluno] = useState(null);
-  const [turmas, setTurmas] = useState([]);
   const [matriculas, setMatriculas] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Carregar as turmas disponíveis e verificar se há um aluno logado no localStorage
-  const { data, loading, error } = useAxios({ method: "GET", url: 'http://localhost:5000/api/matriculas' });
+  const { data } = useGetAluno(id ?? 0);
+  const { data: turmas, isLoading } = useGetTurmas();
 
-  
-  
-  const handleMatricula = (turmaId) => {
-  const { data, loading, error } = useAxios({ method: "GET", url: 'http://localhost:5000/api/matriculas/adicionar', body: { alunoId: aluno.id, turmaId }});
-  };
-  
-  const handleRemoverMatricula = (turmaId) => {
-  const { data, loading, error } = useAxios({ method: "GET", url: 'http://localhost:5000/api/matriculas/remover', body: { alunoId: aluno.id, turmaId }});
-  };
-  
+  useEffect(() => {
+    const alunoId = localStorage.getItem('alunoId');
+    const id = Number(alunoId);
 
-  const handleLogout = () => {
-    setAluno(null);
-    setMatriculas([]); // Limpar as matrículas também
-    localStorage.removeItem('aluno'); // Limpar o aluno do localStorage
-  };
+    setId(id);
+  }, [])
 
   return (
     <div>
       <div>
-        <h3>Bem-vindo, {aluno.nome}</h3>
+        <h3>Bem-vindo, {data?.nome}</h3>
         <h4>Turmas Disponíveis</h4>
         <ul>
-          {turmas.map(turma => (
+          {turmas?.map((turma) => (
             <li key={turma.id}>
-              {turma.disciplina} - {turma.professor} ({turma.horario})
+              {turma.disciplina} - {turma.professor} ({turma.turno ? ''})
               <button onClick={() => handleMatricula(turma.id)}>Matricular</button>
             </li>
           ))}

@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from 'react'
-import { corePath } from '../utils/corePath';
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation';
-import { useAxios } from '@/hooks/useAxios';
 import { Button } from '@/Components/Button';
 import Image from 'next/image';
+import { usePostLogin } from '@/hooks/usePostLogin';
+import { useRegisterAluno } from '@/hooks/useRegisterAluno';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true); 
@@ -13,23 +13,56 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const router = useRouter();
-  
-  const { data: dataLogin, refetch: refetchLogin } = useAxios({ method: "POST", url: `${corePath}/login`, body: { name: nome, id }, auto: false});
-  const { refetch: refetchCadastro} = useAxios({ method: "POST", url: `${corePath}/alunos`, body: { name: nome, id }, auto: false});
+
+  const { mutate } = usePostLogin();
+  const { mutate: mutateRegister } = useRegisterAluno();
+
+  useEffect(() => {
+    const item = localStorage.getItem('isLoged');
+    if(item === 'true') {
+      router.push('/alunos')
+    }
+  }, [])
 
   function handleLogin() {
-    refetchLogin();
-    if (dataLogin) {
-      router.push('/alunos');
-    }
+    mutate(
+      {
+        id: Number(id),
+        nome,
+      },
+      {
+				onError(err) {
+					setErrorMessage(err.message);
+				},
+				onSuccess() {
+          localStorage.setItem('isLoged', 'true')
+          localStorage.setItem('idAluno', id.toString())
+          router.push('/alunos')
+				},
+			}
+    )
   }
   
   function handleCadastro() {
-    refetchCadastro();
+    mutateRegister(
+      {
+        id: Number(id),
+        nome,
+      },
+      {
+				onError(err) {
+					setErrorMessage(err.message);
+				},
+				onSuccess() {
+          localStorage.setItem('isLoged', 'true')
+          router.push('/alunos')
+				},
+			}
+    )
   }
 
   return(
-    <div className="w-full h-screen bg-gradient-to-r from-sky-400 via-blue-500 to-slate-950 text-indigo-50 flex flex-col gap-2 grid place-content-start md:place-content-center ">
+    <div className="w-full h-screen bg-gradient-to-r from-sky-400 via-blue-500 to-slate-950 text-indigo-50 flex flex-col gap-2 grid place-content-start md:place-content-center overflow-auto ">
       <h2 className="text-indigo-50 text-[30px] grid place-content-start md:place-content-center">{isLogin ? 'Login' : 'Cadastro'}</h2>
       <Image style={{ cursor: 'pointer' }} alt='img' src="/logo.png" width={200} height={200}  onClick={() => window.open('https://ead.unisinos.br/area-do-aluno', '_blank')}/>
       <input className="inset-ring inset-ring-indigo-50 p-1 w-50 text-stone-200"

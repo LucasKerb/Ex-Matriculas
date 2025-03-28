@@ -42,4 +42,9 @@ export class StudentsController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.studentsService.remove(+id);
   }
+
+  @Post('login')
+  login(@Body('id', ParseIntPipe) id: number) {
+    return this.studentsService.login(id);
+  }
 }

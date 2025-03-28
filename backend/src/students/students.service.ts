@@ -64,4 +64,14 @@ export class StudentsService {
     const result = this.dbService.aluno.delete({ where: { id } });
     return result;
   }
+
+  async login(id: number) {
+    const aluno = await this.dbService.aluno.findUnique({ where: { id } });
+
+    if (!aluno) {
+      throw new NotFoundException(`Aluno com id ${id} não encontrado.`);
+    }
+
+    return aluno;
+  }
 }
