@@ -9,11 +9,12 @@ import { useRouter } from "next/navigation";
 import { useLayoutEffect, useState } from "react";
 
 const AlunoPage = () => {
-  const [id, setId] = useState<number>(0);
+  const [id, setId] = useState<number>();
 
-  const { data } = useGetAluno(id ?? 0);
+  const { data } = useGetAluno(id);
   const { data: turmas } = useGetTurmas();
-  const { data: matriculas } = useGetTurmasByAluno(id ?? 0);
+  const { data: matriculas, refetch: refetchMatriculas } =
+    useGetTurmasByAluno(id);
   const { mutate } = useDeleteAlunoOfTurma();
   const { mutate: mutateAdd } = useAddAlunoInTurma();
 
@@ -28,11 +29,11 @@ const AlunoPage = () => {
 
   function handleLogout() {
     localStorage.removeItem("idAluno");
-    localStorage.removeItem("isLoged");
     router.push("/");
   }
 
   function handleMatricula(idTurma: number) {
+    if (!id) return;
     mutateAdd(
       { alunoId: id, turmaId: idTurma },
       {
@@ -41,12 +42,14 @@ const AlunoPage = () => {
         },
         onSuccess() {
           alert("Aluno adicionado com sucesso!");
+          refetchMatriculas();
         },
       }
     );
   }
 
   function handleRemoverMatricula(idTurma: number) {
+    if (!id) return;
     mutate(
       { alunoId: id, turmaId: idTurma },
       {
@@ -55,6 +58,7 @@ const AlunoPage = () => {
         },
         onSuccess() {
           alert("Aluno removido com sucesso!");
+          refetchMatriculas();
         },
       }
     );

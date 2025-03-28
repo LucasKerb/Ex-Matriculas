@@ -1,12 +1,15 @@
 import {} from "@/api/loginApi";
 import { restClient } from "@/utils/AxiosClient";
 
-export interface TurmasProps {
-  id: number;
+export interface CreateTurmaProps {
   professor: string;
   disciplina: string;
   dia: string;
   turno: number;
+}
+
+export interface TurmasProps extends CreateTurmaProps {
+  id: number;
 }
 
 export function handleTurno(turno: number) {
@@ -30,5 +33,10 @@ export const classesApi = {
       turno: handleTurno(turno),
       ...rest,
     }));
+  },
+
+  createClass: async (props: CreateTurmaProps) => {
+    const { data } = await restClient.post("/classes", props);
+    return data;
   },
 };

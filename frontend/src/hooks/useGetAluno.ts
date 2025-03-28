@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { alunosApi } from '@/api/alunosApi';
+import { alunosApi } from "@/api/alunosApi";
+import { useQuery } from "@tanstack/react-query";
 
-export function useGetAluno(id: number) {
+export function useGetAluno(id?: number) {
   return useQuery({
     queryFn: () => alunosApi.getUnique(id),
-    queryKey: ["useGetAluno"],
+    queryKey: ["useGetAluno", id],
+    enabled: !!id,
   });
 }
