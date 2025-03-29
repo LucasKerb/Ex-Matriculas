@@ -1,19 +1,20 @@
 // src/components/Header.js
-import React from 'react';
-import Link from 'next/link'
-import { Button } from './Button';
 import { useRouter } from 'next/navigation';
+import { ButtonNav } from './ButtoNav';
 
 
 const Header = () => {
     const router = useRouter();
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-fluid flex flex-row gap-2">
-        <Button  onClick={() => router.push('/')}>Sistema de Matrículas</Button>
-        <Button  onClick={() => router.push('/alunos')}>Aluno</Button>
-        <Button  onClick={() => router.push('/adm')}>Administrador</Button>
-      </div>
+    <nav className="w-full flex justify-center gap-2">
+
+        <ButtonNav  onClick={() => router.push('/')}>Sistema de Matrículas</ButtonNav>
+
+        <ButtonNav  onClick={() => router.push('/alunos')}>Aluno</ButtonNav>
+
+        <ButtonNav  onClick={() => router.push('/adm')}>Administrador</ButtonNav>
+
+
     </nav>
   );
 };

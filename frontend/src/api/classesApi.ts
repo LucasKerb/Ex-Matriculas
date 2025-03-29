@@ -40,4 +40,10 @@ export const classesApi = {
     const { data } = await restClient.post("/classes", props);
     return data;
   },
+
+  remove: async ({ id }: { id: number }) => {
+    if (!id || isNaN(Number(id))) throw new Error("ID inválido");
+    const { data } = await restClient.delete(`/classes/${Number(id)}`);
+    return data;
+  },
 };
