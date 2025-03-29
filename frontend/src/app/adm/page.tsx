@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { TurmaDto } from "@/api/classesApi";
+import { handleTurno, TurmaDto, TurmasProps } from "@/api/classesApi";
 import { Button } from "@/Components/Button";
 import { ButtonSec } from "@/Components/ButtonSec";
 import Header from "@/Components/NavBar";
@@ -59,9 +59,12 @@ const AdminPage = () => {
         onError(error) {
           alert(`❌ Não foi possível adicionar a classe, erro: ${error}`);
         },
-        onSuccess(data) {
+        onSuccess({ turno, ...rest }: TurmasProps) {
           alert("✅  Classe adicionada com sucesso!");
-          setTurmasState((prev) => [...prev, data]);
+          setTurmasState((prev) => [
+            ...prev,
+            { ...rest, turno: handleTurno(turno) },
+          ]);
           queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
           queryClient.invalidateQueries({
             queryKey: ["useGetAllStudentsWithTurmas"],

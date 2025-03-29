@@ -29,7 +29,7 @@ export function handleTurno(turno: number): string {
     case 3:
       return "Noite";
     default:
-      return "Desconhecido"; // garante retorno válido
+      return "Desconhecido";
   }
 }
 
