@@ -47,4 +47,9 @@ export class StudentsController {
   login(@Body('id', ParseIntPipe) id: number) {
     return this.studentsService.login(id);
   }
+
+  @Get('with-classes')
+  findAllWithClasses() {
+    return this.studentsService.findAllWithClasses();
+  }
 }

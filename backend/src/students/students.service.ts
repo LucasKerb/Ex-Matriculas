@@ -74,4 +74,22 @@ export class StudentsService {
 
     return aluno;
   }
+
+  async findAllWithClasses() {
+    const alunos = await this.dbService.aluno.findMany({
+      include: {
+        turmas: {
+          include: {
+            turma: true,
+          },
+        },
+      },
+    });
+
+    return alunos.map((aluno) => ({
+      id: aluno.id,
+      nome: aluno.nome,
+      turmas: aluno.turmas.map((t) => t.turma),
+    }));
+  }
 }

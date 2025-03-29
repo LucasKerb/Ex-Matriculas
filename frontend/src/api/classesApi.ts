@@ -12,15 +12,16 @@ export interface TurmasProps extends CreateTurmaProps {
   id: number;
 }
 
-export function handleTurno(turno: number) {
-  if (turno === 1) {
-    return "Manhã";
-  }
-  if (turno === 2) {
-    return "Tarde";
-  }
-  if (turno === 3) {
-    return "Noite";
+export function handleTurno(turno: number): string {
+  switch (turno) {
+    case 1:
+      return "Manhã";
+    case 2:
+      return "Tarde";
+    case 3:
+      return "Noite";
+    default:
+      return "Desconhecido"; // garante retorno válido
   }
 }
 
