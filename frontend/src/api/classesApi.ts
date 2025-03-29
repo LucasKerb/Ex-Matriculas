@@ -12,6 +12,14 @@ export interface TurmasProps extends CreateTurmaProps {
   id: number;
 }
 
+export interface TurmaDto {
+  id?: number;
+  professor: string;
+  disciplina: string;
+  dia: string;
+  turno: string;
+}
+
 export function handleTurno(turno: number): string {
   switch (turno) {
     case 1:
@@ -28,12 +36,14 @@ export function handleTurno(turno: number): string {
 export const classesApi = {
   getTurmas: async () => {
     const { data } = await restClient.get("/classes");
-    const result = data as TurmasProps[];
+    const dataRes = data as TurmasProps[];
 
-    return result.map(({ turno, ...rest }) => ({
+    const result: TurmaDto[] = dataRes.map(({ turno, ...rest }) => ({
       turno: handleTurno(turno),
       ...rest,
     }));
+
+    return result;
   },
 
   createClass: async (props: CreateTurmaProps) => {

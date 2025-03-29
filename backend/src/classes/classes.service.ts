@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -71,7 +72,11 @@ export class ClassesService {
       ) {
         throw new NotFoundException(`Turma com id ${id} não encontrada.`);
       }
-      throw error;
+
+      console.error('Erro ao deletar turma:', error);
+      throw new InternalServerErrorException(
+        `Erro interno ao tentar deletar a turma com id ${id}`,
+      );
     }
   }
 }

@@ -10,6 +10,12 @@ export interface Turma {
   turno: number;
 }
 
+export interface AlunoComTurmas {
+  id: number;
+  nome: string;
+  turmas: Turma[];
+}
+
 export interface TurmaDto {
   id: number;
   professor: string;
@@ -21,21 +27,7 @@ export interface TurmaDto {
 export interface AlunoComTurmasDto {
   id: number;
   nome: string;
-  turmas: {
-    alunoId: number;
-    turmaId: number;
-    turma: TurmaDto;
-  }[];
-}
-
-export interface AlunoComTurmas {
-  id: number;
-  nome: string;
-  turmas: {
-    alunoId: number;
-    turmaId: number;
-    turma: Turma;
-  }[];
+  turmas: TurmaDto[];
 }
 
 export const alunosApi = {
@@ -51,19 +43,18 @@ export const alunosApi = {
     const result: AlunoComTurmasDto[] = alunos.map(({ id, nome, turmas }) => ({
       id,
       nome,
-      turmas: turmas.map(({ alunoId, turmaId, turma }) => {
-        const { turno, ...rest } = turma;
-        return {
-          alunoId,
-          turmaId,
-          turma: {
-            ...rest,
-            turno: handleTurno(turno),
-          },
-        };
-      }),
+      turmas: turmas.map(({ turno, ...rest }) => ({
+        ...rest,
+        turno: handleTurno(turno),
+      })),
     }));
 
     return result;
+  },
+
+  remove: async ({ id }: { id: number }) => {
+    if (!id || isNaN(Number(id))) throw new Error("ID inválido");
+    const { data } = await restClient.delete(`/students/${Number(id)}`);
+    return data;
   },
 };

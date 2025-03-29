@@ -26,10 +26,10 @@ model Turma {
 }
 
 model AlunoTurma {
-  aluno   Aluno @relation(fields: [alunoId], references: [id])
+  aluno   Aluno @relation(fields: [alunoId], references: [id], onDelete: Cascade)
   alunoId Int
 
-  turma   Turma @relation(fields: [turmaId], references: [id])
+  turma   Turma @relation(fields: [turmaId], references: [id], onDelete: Cascade)
   turmaId Int
 
   @@id([alunoId, turmaId])

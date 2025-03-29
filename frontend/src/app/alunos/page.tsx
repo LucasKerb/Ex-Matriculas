@@ -61,6 +61,9 @@ const AlunoPage = () => {
         onSuccess() {
           alert("✅ Aluno adicionado com sucesso!");
           queryClient.invalidateQueries({ queryKey: ["turmasByAluno", id] });
+          queryClient.invalidateQueries({
+            queryKey: ["useGetAllStudentsWithTurmas"],
+          });
           setMatriculasState((prev) => [
             ...prev,
             {
@@ -87,11 +90,14 @@ const AlunoPage = () => {
           refetchMatriculas();
         },
         onSuccess() {
-          alert("✅ Aluno removido com sucesso!");
+          alert("✅ Matrícula removido com sucesso!");
           queryClient.invalidateQueries({ queryKey: ["turmasByAluno", id] });
           setMatriculasState((prev) =>
             prev.filter((m) => m.turmaId !== idTurma)
           );
+          queryClient.invalidateQueries({
+            queryKey: ["useGetAllStudentsWithTurmas"],
+          });
         },
       }
     );
@@ -124,7 +130,7 @@ const AlunoPage = () => {
                 className="text-indigo-50 text-[20px] list-disc"
               >
                 {`${turma.disciplina} - ${turma.professor} (${turma.turno})`}
-                <ButtonSec onClick={() => handleMatricula(turma.id)}>
+                <ButtonSec onClick={() => handleMatricula(Number(turma.id))}>
                   Matricular
                 </ButtonSec>
               </li>

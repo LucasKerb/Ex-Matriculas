@@ -1,13 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { TurmaDto } from "@/api/classesApi";
 import { Button } from "@/Components/Button";
 import { ButtonSec } from "@/Components/ButtonSec";
 import Header from "@/Components/NavBar";
 import { useCreateClass } from "@/hooks/useCreateClass";
+import { useDeleteAluno } from "@/hooks/useDeleteAluno";
 import { useDeleteTurma } from "@/hooks/useDeleteTurma";
 import { useGetAllStudentsWithTurmas } from "@/hooks/useGetAllStudentsWithTurmas";
 import { useGetTurmas } from "@/hooks/useGetTurmas";
+import { useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const AdminPage = () => {
   const [disciplina, setDisciplina] = useState("");
@@ -15,10 +19,34 @@ const AdminPage = () => {
   const [diaSemana, setDiaSemana] = useState("");
   const [turno, setTurno] = useState<number | null>(null);
 
+  const queryClient = useQueryClient();
+
   const { mutate: createClass } = useCreateClass();
-  const { data: turmas, refetch: refetchTurmas } = useGetTurmas();
-  const { data: dataAlunos } = useGetAllStudentsWithTurmas();
+  const { data: turmas, isLoading: isLoadingTurmas } = useGetTurmas();
+  const {
+    data: dataAlunos,
+    isLoading: isLoadingDataAlunos,
+    refetch,
+  } = useGetAllStudentsWithTurmas();
   const { mutate } = useDeleteTurma();
+  const { mutate: deleteAluno } = useDeleteAluno();
+
+  const [turmasState, setTurmasState] = useState<TurmaDto[]>([]);
+  // const [alunosState, setAlunosState] = useState<AlunoComTurmasDto[]>([]);
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
+    if (turmas) {
+      setTurmasState(turmas);
+    }
+  }, [isLoadingTurmas]);
+
+  useEffect(() => {
+    refetch();
+    queryClient.invalidateQueries({
+      queryKey: ["useGetAllStudentsWithTurmas"],
+    });
+  }, [isLoadingDataAlunos]);
 
   function handleCreateClass() {
     if (!disciplina || !professor || !diaSemana || !turno) {
@@ -31,9 +59,13 @@ const AdminPage = () => {
         onError(error) {
           alert(`❌ Não foi possível adicionar a classe, erro: ${error}`);
         },
-        onSuccess() {
-          alert("✅  Classe adicionado com sucesso!");
-          refetchTurmas();
+        onSuccess(data) {
+          alert("✅  Classe adicionada com sucesso!");
+          setTurmasState((prev) => [...prev, data]);
+          queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
+          queryClient.invalidateQueries({
+            queryKey: ["useGetAllStudentsWithTurmas"],
+          });
         },
       }
     );
@@ -45,10 +77,34 @@ const AdminPage = () => {
       {
         onError(error) {
           alert(`❌ Não foi possível remover a classe, erro: ${error}`);
+          queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
         },
         onSuccess() {
-          alert("✅ Aluno classe removida com sucesso!");
-          refetchTurmas();
+          alert("✅ Classe removida com sucesso!");
+          queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
+          queryClient.invalidateQueries({
+            queryKey: ["useGetAllStudentsWithTurmas"],
+          });
+          setTurmasState((prev) => prev.filter((turma) => turma.id !== id));
+        },
+      }
+    );
+  }
+
+  function handleDeleteAluno(id: number) {
+    deleteAluno(
+      { id },
+      {
+        onError(error) {
+          alert(`❌ Não foi possível remover o aluno, erro: ${error}`);
+          queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
+        },
+        onSuccess() {
+          alert("✅ Aluno removido com sucesso!");
+          queryClient.invalidateQueries({ queryKey: ["useGetTurmas"] });
+          queryClient.invalidateQueries({
+            queryKey: ["useGetAllStudentsWithTurmas"],
+          });
         },
       }
     );
@@ -134,7 +190,7 @@ const AdminPage = () => {
         <div className="flex flex-col">
           <h3 className="text-indigo-50 text-[30px]">Turmas Criadas</h3>
           <ul>
-            {turmas?.map(({ dia, disciplina, id, professor, turno }) => (
+            {turmasState?.map(({ dia, disciplina, id, professor, turno }) => (
               <li key={id} className="list-decimal text-[20px] text-stone-200">
                 {disciplina} - {professor} ({dia}, {turno})
                 <ButtonSec onClick={() => handleDeleteClass(Number(id))}>
@@ -148,21 +204,31 @@ const AdminPage = () => {
         <div className="flex flex-col">
           <h3 className="text-indigo-50 text-[30px]">Alunos Cadastrados</h3>
           <ul>
-            {dataAlunos?.map(({ id, nome, turmas }) => (
-              <li key={id} className="text-[20px] list-disc text-stone-200">
-                {nome} ({turmas.length} turmas)
-                <ButtonSec onClick={() => {}}>Excluir</ButtonSec>
-                <ul>
-                  {turmas?.map(
-                    ({ turma: { dia, disciplina, id, professor, turno } }) => (
-                      <li key={id} className="text-[20px] list-decimal ">
-                        {disciplina} - {professor} ({dia}, {turno})
-                      </li>
-                    )
-                  )}
-                </ul>
-              </li>
-            ))}
+            {!dataAlunos
+              ? ""
+              : dataAlunos?.map(({ id, nome, turmas }) => {
+                  console.log({ id, nome, turmas });
+                  return (
+                    <li
+                      key={id}
+                      className="text-[20px] list-disc text-stone-200"
+                    >
+                      {nome} ({turmas.length} turmas)
+                      <ButtonSec onClick={() => handleDeleteAluno(id)}>
+                        Excluir
+                      </ButtonSec>
+                      <ul>
+                        {turmas?.map(
+                          ({ id, dia, disciplina, professor, turno }) => (
+                            <li key={id} className="text-[20px] list-decimal ">
+                              {disciplina} - {professor} ({dia}, {turno})
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </li>
+                  );
+                })}
           </ul>
         </div>
       </div>
