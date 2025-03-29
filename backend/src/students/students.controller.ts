@@ -15,6 +15,11 @@ import { StudentsService } from './students.service';
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
+  @Get('with-classes')
+  findAllWithClasses() {
+    return this.studentsService.findAllWithClasses();
+  }
+
   @Post()
   create(@Body() createStudentDto: Prisma.AlunoCreateInput) {
     return this.studentsService.create(createStudentDto);

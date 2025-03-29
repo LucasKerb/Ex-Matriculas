@@ -1,4 +1,4 @@
-import {restClient} from '@/utils/AxiosClient';
+import { restClient } from "@/utils/AxiosClient";
 
 export interface AlunoProps {
   id: number;
@@ -7,12 +7,12 @@ export interface AlunoProps {
 
 export const loginApi = {
   login: async (props: AlunoProps) => {
-    const { data } = await restClient.post('/students/login', props);
+    const { data } = await restClient.post("/students/login", props);
     return data;
   },
 
   register: async (props: AlunoProps) => {
-    const { data } = await restClient.post('/students', props);
+    const { data } = await restClient.post("/students", props);
     return data;
   },
-}
+};

@@ -6,12 +6,13 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { DatabaseService } from 'src/database/database.service';
+import { CreateStudentDto } from './dto/studentDto';
 
 @Injectable()
 export class StudentsService {
   constructor(private readonly dbService: DatabaseService) {}
 
-  async create(createStudentDto: Prisma.AlunoCreateInput) {
+  async create(createStudentDto: CreateStudentDto) {
     try {
       const result = await this.dbService.aluno.create({
         data: createStudentDto,
@@ -73,5 +74,23 @@ export class StudentsService {
     }
 
     return aluno;
+  }
+
+  async findAllWithClasses() {
+    const alunos = await this.dbService.aluno.findMany({
+      include: {
+        turmas: {
+          include: {
+            turma: true,
+          },
+        },
+      },
+    });
+
+    return alunos.map((aluno) => ({
+      id: aluno.id,
+      nome: aluno.nome,
+      turmas: aluno.turmas.map((t) => t.turma),
+    }));
   }
 }

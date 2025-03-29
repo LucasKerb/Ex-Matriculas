@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -39,7 +40,12 @@ export class ClassesController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') idRaw: string) {
+    const id = Number(idRaw);
+    if (isNaN(id)) {
+      throw new BadRequestException('ID inválido. Deve ser numérico.');
+    }
+
     return this.classesService.remove(id);
   }
 }
