@@ -13,6 +13,28 @@ interface AlunoTurmaProps {
   };
 }
 
+export type Turno = 1 | 2 | 3;
+
+export interface Aluno {
+  id: number;
+  nome: string;
+}
+
+export interface Turma {
+  id: number;
+  professor: string;
+  disciplina: string;
+  dia: string;
+  turno: Turno;
+}
+
+export interface Matricula {
+  alunoId: number;
+  turmaId: number;
+  aluno: Aluno;
+  turma: Turma;
+}
+
 export const alunoTurmasApi = {
   getTurmasAluno: async (alunoId?: number) => {
     const { data } = await restClient.get(`/enrollments/student/${alunoId}`);
